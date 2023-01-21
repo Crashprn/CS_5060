@@ -79,19 +79,14 @@ class OptimalStopper:
             for stopNumber in range(len(scenario) - 1):
                 # Get expected lowest number for stopNumber first elements
                 expectation = max(scenario[:stopNumber+1])
-                
-                sameCount = 0
 
                 # Loop through the remaining data and stop on first number lower than expectation
                 for j in range(stopNumber, len(scenario) - 1):
                     if scenario[j] > expectation:
                         Stops[stopNumber] += 1
                         break
-                    elif scenario[j] == expectation:
-                        if sameCount > 3:
-                            Stops[stopNumber] += 1
-                            break
-                        sameCount += 1
+                    elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
+                        expectation -= 1
 
                 # If the optimal number was chosen add increment successful stop count
                 if scenario[j] == optimalNumber:
@@ -101,26 +96,21 @@ class OptimalStopper:
 
     def maxBenefitStop(self, scenario: list[int]) -> typing.Tuple[list[int], list[int]]:
         # Set initial stop number, scenario list, and optimal number
-            optimalNumber = max(scenario)
             successfulStops = [0 for i in range(self.numberElements)]
             Stops = [0 for i in range(self.numberElements)]
+            
+            optimalNumber = 0
+            for i in range(len(scenario)):
+                optimalNumber = max(optimalNumber, scenario[i] - (i+1))
             
 
             # Loop through all stop numbers (stop at len - 1 because it has to stop at some point)
             for stopNumber in range(len(scenario) - 1):
                 # Get expected lowest number for stopNumber first elements
-                expectation = max(scenario[:stopNumber+1]) - stopNumber
-                
-                sameCount = 0
-
-                # Loop through the remaining data and stop on first number lower than expectation
-                for j in range(stopNumber, len(scenario) - 1):
-                    if scenario[j] > expectation:
-                        Stops[stopNumber] += 1
-                        break
+                expectation = max(scenario[0:stopNumber+1]) - stopNumber
 
                 # If the optimal number was chosen add increment successful stop count
-                if scenario[j] == optimalNumber:
+                if scenario[stopNumber] == optimalNumber:
                     successfulStops[stopNumber] += 1
 
             return (Stops, successfulStops)
@@ -147,7 +137,7 @@ def getScenario2() -> list[int]:
 
 def problem1():
     elements = 1000
-    iterations = 3000
+    iterations = 1000
 
     solver = OptimalStopper(np.random.uniform, listCount=iterations) 
     print("Optimal Stopping percentages:")
@@ -227,8 +217,6 @@ if __name__ == "__main__":
     problem2()
     
     plt.show()
-    plt.pause(200)
-
 
 
 
