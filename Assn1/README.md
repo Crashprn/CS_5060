@@ -1,5 +1,8 @@
 # Runnning Code
 		To run the code all that needs to be done is run the HWK file. The main function then calls problem1 and problem2. The only difference between problem 1 and 2 is the stopping algorithm run on each list. For problem 1 the vanilla function is used, and problem 2 uses the max benefit function. The get optimal stop takes a callable which produces the lists so the numbers in the list are generated from the function it is given.
+
+		NOTE: TO get control graph Fall through condition must be commented out.
+
 		Running the code produces 7 graphs:
 		- Problem 1
 			- Uniform Distribution from 0-99
@@ -14,7 +17,7 @@
 
 # Problem 1
 
-	For the first problem I used what is essentially the vanilla stopping algorithm with a slight addition. This addition essentially randomly lowers the expectation of the stopper as it gets closer to the end of the list. I accomplish this by generating a random number and only decrementing the expectation if it is larger than the percentage of the list left to select from. This allows the algorithm to pick the correct solution if the optimal solution occurs early in the list for uniform distributions. However this has an adverse effect on randomly shuffled lists as this document will show.
+For the first problem I used what is essentially the vanilla stopping algorithm with a slight addition. This addition essentially randomly lowers the expectation of the stopper as it gets closer to the end of the list. I accomplish this by generating a random number and only decrementing the expectation if it is larger than the percentage of the list left to select from. This allows the algorithm to pick the correct solution if the optimal solution occurs early in the list for uniform distributions. However this has an adverse effect on randomly shuffled lists as this document will show.
 
 ## Results
 
@@ -28,7 +31,7 @@ Stop %: 13
 
 Stop % Probability: 43%
 
-The output from the code shows the optimal stopping point of the uniform distribution with the vanilla stopping algorithm of 13%. This makes sense because if the list is populated 0 to n numbers then all of the numbers are likely to occur in the first n elements. This means the optimal solution is likely to be in the n first elements quite early in the list and thus the stopper should stop early to avoid the optimal number being the expectation.
+The output from the code shows the optimal stopping point of the uniform distribution with the vanilla stopping algorithm of 13%. This makes sense because if the list is populated 0 to n numbers then all of the numbers are likely to occur in the first 100 elements in the list. This means the optimal solution is likely to be in the n first elements quite early in the list and thus the stopper should stop early to avoid the optimal number being the expectation.
 
 ### Shuffled List
 
@@ -38,7 +41,9 @@ Stop %: 43%
 
 Stop % Probability: 12%
 
-This graph shows the problem as outlined in the slides with a number only occuring once in the list. The code ouputs a optimal stop of 43% of the length of the list. This is sufficiently close to the 36.8 % number given by the book. The reason why it is not the exact number is due to the fall through condition for the uniform numbers. In the shuffled list, no number is the same, so the likelyhood of a number being greater than the expectation is fairly high as their are more options. The fallthrough condition reduces the effectiveness of the shuffled list because there is a substantially higher chance that reducing the expectation will cause it to pick a non-optimal solution. However, without the fall throuhg condition, the algorithm produces the expected 37% and 37%.
+This graph shows the problem as outlined in the slides with a number only occuring once in the list. The code ouputs a optimal stop of 43% of the length of the list. This is sufficiently close to the 36.8 % number given by the book. The reason why it is not the exact number is due to the fall through condition for the uniform numbers. In the shuffled list, no number is the same, so the likelyhood of a number being greater than the expectation is fairly high as their are more options. The fallthrough condition reduces the effectiveness of the shuffled list because there is a substantially higher chance that reducing the expectation will cause it to pick a non-optimal solution. However, without the fall through condition, the algorithm produces the expected 37% and 37% as shown in the graph below.
+
+<img src="Figures/ShuffledControl.png" width="500" />
 
 ### Scenario 1
 
@@ -68,7 +73,7 @@ However, when looking at the total stops graph, the fall through condition of re
 
 # Problem 2
 
-For this problem I made a seperate stopping function the picks the value with the maximum benefit. The problem to be solved is how much exploration should be done before picking a candidate if rating candidates has a cost. For the optimal value, the algorithm selects the largest number in the list after subtracting its index. For the expectation, the best candidate is the highest number before stopping minus the stopping number. Then, stopping is the same as the vanilla stopping algorithm but finding a number - index that is higher than the expectation.
+For this problem I made a seperate stopping function that picks the value with the maximum benefit. The problem to be solved is how much exploration should be done before picking a candidate if rating candidates has a cost. For the optimal value, the algorithm selects the largest number in the list after subtracting its index. For the expectation, the best candidate is the highest number before stopping minus the stopping number. Then, stopping is the same as the vanilla stopping algorithm but finding a number - index that is higher than the expectation.
 
 ## Results
 
@@ -78,7 +83,7 @@ Stop %: 1%
 
 Stop % Probability: 14%
 
-This graph shows the results of the algorithm on a uniform draw of 100 numbers from 1-99. As expected by the constraints of the problem, the optimal stopping percentage is 1%  and the odds of picking the optimal number is 12% as forming an expectation is costly. However, this is likely because the cost of passing up a number is 1% of the total reward. This then explains the optimal stopping percentage because forming a better expectation reduces the potential reward in the future.
+This graph shows the results of the algorithm on a uniform draw of 100(having more than 100 would cause negative reward) numbers from 1-99. As expected by the constraints of the problem, the optimal stopping percentage is 1%  and the odds of picking the optimal number is 14% as forming an expectation is costly. However, this is likely because the cost of passing up a number is 1% of the total reward. This then explains the optimal stopping percentage because forming a better expectation reduces the potential reward in the future.
 
 <img src="Figures/Normal.png" width="500" />
 

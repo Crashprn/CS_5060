@@ -85,6 +85,7 @@ class OptimalStopper:
                     if scenario[j] > expectation:
                         Stops[stopNumber] += 1
                         break
+                    # Fall through condition
                     elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
                         expectation -= 1
 
@@ -99,6 +100,7 @@ class OptimalStopper:
             successfulStops = [0 for i in range(self.numberElements)]
             Stops = [0 for i in range(self.numberElements)]
             
+            # Get the optimal number in the list by finding the the highest number-index
             optimalNumber = 0
             for i in range(len(scenario)):
                 optimalNumber = max(optimalNumber, scenario[i] - (i+1))
@@ -109,21 +111,20 @@ class OptimalStopper:
                 # Get expected lowest number for stopNumber first elements
                 expectation = max(scenario[0:stopNumber+1]) - stopNumber
 
+                # loop throught the list until finding a number better than the expectation
                 for j in range(stopNumber+1, len(scenario)):
                     if scenario[j] - (j+1) > expectation:
                         Stops[stopNumber] += 1
+                    
+                    # Fall through condition
                     elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
                         expectation -= 1
                 
-                # If the optimal number was chosen add increment successful stop count
+                # If the optimal number was chosen increment successful stop count
                 if scenario[stopNumber] - (stopNumber+1) == optimalNumber:
                     successfulStops[stopNumber] += 1
 
             return (Stops, successfulStops)
-
-
-
-
 
 def getScenario1() -> list[int]:
     scenario1 = open(os.path.join(SCENARIO_DIR, TEST_FILE_1))
@@ -140,6 +141,22 @@ def getScenario2() -> list[int]:
 
     scenario2.close()
     return [scenarioList2]
+
+def controlGraph():
+    elements = 1000
+    iterations = 10000
+
+    solver = OptimalStopper(np.random.uniform, listCount=iterations) 
+
+    shuffledStops, shuffledOptimalStops = solver.getOptimalStopping(solver.getShuffledList)
+    print(f"Shuffled: {np.argmax(shuffledOptimalStops) / elements:.2f}")
+    fig, ax = plt.subplots(figsize=(10,7))
+    ax.plot(range(elements), shuffledOptimalStops)
+    ax.set_title("Shuffled List Control")
+    ax.set_xlabel("Stopping number")
+    ax.set_ylabel("Optimal solution count")
+    fig.savefig("Figures/ShuffledControl.png")
+   
 
 def problem1():
     elements = 1000
@@ -228,9 +245,13 @@ def problem2():
 
 
 if __name__ == "__main__":
-    
+
+    # Must comment out fall through condition to get this graph.
+    #controlGraph()
+
     problem1()
 
+    
     problem2()
     
     plt.show()
