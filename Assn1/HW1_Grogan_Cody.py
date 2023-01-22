@@ -81,7 +81,7 @@ class OptimalStopper:
                 expectation = max(scenario[:stopNumber+1])
 
                 # Loop through the remaining data and stop on first number lower than expectation
-                for j in range(stopNumber, len(scenario) - 1):
+                for j in range(stopNumber, len(scenario)):
                     if scenario[j] > expectation:
                         Stops[stopNumber] += 1
                         break
@@ -109,8 +109,14 @@ class OptimalStopper:
                 # Get expected lowest number for stopNumber first elements
                 expectation = max(scenario[0:stopNumber+1]) - stopNumber
 
+                for j in range(stopNumber+1, len(scenario)):
+                    if scenario[j] - (j+1) > expectation:
+                        Stops[stopNumber] += 1
+                    elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
+                        expectation -= 1
+                
                 # If the optimal number was chosen add increment successful stop count
-                if scenario[stopNumber] == optimalNumber:
+                if scenario[stopNumber] - (stopNumber+1) == optimalNumber:
                     successfulStops[stopNumber] += 1
 
             return (Stops, successfulStops)
@@ -137,10 +143,10 @@ def getScenario2() -> list[int]:
 
 def problem1():
     elements = 1000
-    iterations = 1000
+    iterations = 10000
 
     solver = OptimalStopper(np.random.uniform, listCount=iterations) 
-    print("Optimal Stopping percentages:")
+    print("Problem 1 Optimal Stopping percentages:")
 
     # Uniform Distribution
     uniformStops, uniformOptimalStops = solver.getOptimalStopping(solver.getRandomList)
@@ -182,18 +188,29 @@ def problem1():
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
     fig.savefig("Figures/DataSet2.png")
+    
+     # Dataset 2 Total Stops
+    fig, ax = plt.subplots(figsize=(10,7))
+    ax.plot(range(elements), data2Stops)
+    ax.set_title("Data Set 2 Total Stops")
+    ax.set_xlabel("Stopping number")
+    ax.set_ylabel("Optimal solution count")
+    fig.savefig("Figures/DataSet2TotalStops.png")
+    
 
 
 def problem2():
-    iterations = 1000
-    elements = 1000
+    iterations = 10000
+    elements = 100
     solver = OptimalStopper(np.random.uniform, stopper="maxBenefit", numberElements=elements, listCount=iterations, numRange=(1, 99))
+    
+    print("Problem 2 Optimal Stopping Percentages:")    
 
     uniformStops, uniformOptimalStops = solver.getOptimalStopping(solver.getRandomList)
 
-    print(f"Uniform: {np.argmax(uniformOptimalStops) / elements:.2f}")
+    print(f"Uniform: {(np.argmax(uniformOptimalStops)+1) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
-    ax.plot(range(elements), uniformOptimalStops)
+    ax.plot(range(1,elements+1), uniformOptimalStops)
     ax.set_title("Uniform Distribution")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
@@ -201,9 +218,9 @@ def problem2():
 
     normalStops, normalOptimalStops = solver.getOptimalStopping(solver.getNormalList)
 
-    print(f"Normal: {np.argmax(normalOptimalStops) / elements:.2f}")
+    print(f"Normal: {(np.argmax(normalOptimalStops)+1) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
-    ax.plot(range(elements), normalOptimalStops)
+    ax.plot(range(1,elements+1), normalOptimalStops)
     ax.set_title("Normal Distribution")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
@@ -212,7 +229,7 @@ def problem2():
 
 if __name__ == "__main__":
     
-    #problem1()
+    problem1()
 
     problem2()
     
