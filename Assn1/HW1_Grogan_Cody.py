@@ -20,7 +20,13 @@ class OptimalStopper:
         self.mean, self.stdDev = normalStats
         self.min = numRange[0]
         self.max = numRange[1]
-        self.stopper = self.vanillaStop if stopper == "vanilla" else self.maxBenefitStop
+        if stopper == "vanilla":
+            self.stopper = self.vanillaStop
+        elif stopper == "fallthrough":
+            self.stopper = self.fallThroughStop
+        else:
+            self.stopper = self.maxBenefitStop
+
 
     def getRandomList(self) -> list[list[int]]:
         scenarios = []
@@ -86,6 +92,33 @@ class OptimalStopper:
                         Stops[stopNumber] += 1
                         break
                     # Fall through condition
+                    #elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
+                        #expectation -= 1
+
+                # If the optimal number was chosen add increment successful stop count
+                if scenario[j] == optimalNumber:
+                    successfulStops[stopNumber] += 1
+
+            return (Stops, successfulStops)
+
+    def fallThroughStop(self, scenario: list[int]) -> typing.Tuple[list[int], list[int]]:
+         # Set initial stop number, scenario list, and optimal number
+            optimalNumber = max(scenario)
+            successfulStops = [0 for i in range(self.numberElements)]
+            Stops = [0 for i in range(self.numberElements)]
+            
+
+            # Loop through all stop numbers (stop at len - 1 because it has to stop at some point)
+            for stopNumber in range(len(scenario) - 1):
+                # Get expected lowest number for stopNumber first elements
+                expectation = max(scenario[:stopNumber+1])
+
+                # Loop through the remaining data and stop on first number lower than expectation
+                for j in range(stopNumber, len(scenario)):
+                    if scenario[j] > expectation:
+                        Stops[stopNumber] += 1
+                        break
+                    # Fall through condition
                     elif np.random.random() < (j - stopNumber)/(len(scenario) - stopNumber - 1):
                         expectation -= 1
 
@@ -94,7 +127,7 @@ class OptimalStopper:
                     successfulStops[stopNumber] += 1
 
             return (Stops, successfulStops)
-
+        
     def maxBenefitStop(self, scenario: list[int]) -> typing.Tuple[list[int], list[int]]:
         # Set initial stop number, scenario list, and optimal number
             successfulStops = [0 for i in range(self.numberElements)]
@@ -142,74 +175,99 @@ def getScenario2() -> list[int]:
     scenario2.close()
     return [scenarioList2]
 
-def controlGraph():
+def controlGraphs():
     elements = 1000
     iterations = 10000
 
-    solver = OptimalStopper(np.random.uniform, listCount=iterations) 
+    solver = OptimalStopper(np.random.uniform, stopper="vanilla", listCount=iterations) 
 
+    print("Control Graphs:")
     shuffledStops, shuffledOptimalStops = solver.getOptimalStopping(solver.getShuffledList)
-    print(f"Shuffled: {np.argmax(shuffledOptimalStops) / elements:.2f}")
+    print(f"\tShuffled: {np.argmax(shuffledOptimalStops) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), shuffledOptimalStops)
     ax.set_title("Shuffled List Control")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
     fig.savefig("Figures/ShuffledControl.png")
+
+    uniformStops, uniformOptimalStops = solver.getOptimalStopping(solver.getRandomList)
+    print(f"\tUniform: {np.argmax(uniformOptimalStops) / elements:.2f}")
+    fig, ax = plt.subplots(figsize=(10,7))
+    ax.plot(range(elements), uniformOptimalStops)
+    ax.set_title("Uniform List Control")
+    ax.set_xlabel("Stopping number")
+    ax.set_ylabel("Optimal solution count")
+    fig.savefig("Figures/UniformControl.png")
    
 
 def problem1():
     elements = 1000
     iterations = 10000
 
-    solver = OptimalStopper(np.random.uniform, listCount=iterations) 
+    solver = OptimalStopper(np.random.uniform, stopper="fallthrough", listCount=iterations) 
     print("Problem 1 Optimal Stopping percentages:")
 
     # Uniform Distribution
     uniformStops, uniformOptimalStops = solver.getOptimalStopping(solver.getRandomList)
     
-    print(f"Uniform: {np.argmax(uniformOptimalStops) / elements:.2f}")
+    print(f"\tUniform Fall Through: {np.argmax(uniformOptimalStops) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), uniformOptimalStops)
-    ax.set_title("Uniform Distribution")
+    ax.set_title("Uniform Fall Through")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
-    fig.savefig("Figures/Uniform.png")
+    fig.savefig("Figures/UniformFallThrough.png")
     
     # Shuffled Distribution
     shuffledStops, shuffledOptimalStops = solver.getOptimalStopping(solver.getShuffledList)
-    print(f"Shuffled: {np.argmax(shuffledOptimalStops) / elements:.2f}")
+    print(f"\tShuffled Fall Through: {np.argmax(shuffledOptimalStops) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), shuffledOptimalStops)
-    ax.set_title("Shuffled List")
+    ax.set_title("Shuffled List Fall Through")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
-    fig.savefig("Figures/Shuffled.png")
+    fig.savefig("Figures/ShuffledFallThrough.png")
 
-    # Dataset 1
+    # Dataset 1 Vanilla
+    solver.stopper = solver.vanillaStop
     data1Stops, data1OptimalStops= solver.getOptimalStopping(getScenario1)
-    print(f"DataSet: {np.argmax(data1OptimalStops) / elements:.2f}")
+    print(f"\tDataSet 1 Vanilla: {np.argmax(data1OptimalStops) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), data1OptimalStops)
-    ax.set_title("Data Set 1")
+    ax.set_title("Data Set 1 Vanilla")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
-    fig.savefig("Figures/DataSet1.png")
+    fig.savefig("Figures/DataSet1Vanilla.png")
 
-    # Dataset 2
+    # Dataset 1 Fall through
+    solver.stopper = solver.fallThroughStop
+    data1Stops, data1OptimalStops= solver.getOptimalStopping(getScenario1)
+    print(f"\tDataSet 1 Fall Through: {np.argmax(data1OptimalStops) / elements:.2f}")
+    fig, ax = plt.subplots(figsize=(10,7))
+    ax.plot(range(elements), data1OptimalStops)
+    ax.set_title("Data Set 1 Fall through")
+    ax.set_xlabel("Stopping number")
+    ax.set_ylabel("Optimal solution count")
+    fig.savefig("Figures/DataSet1FallThrough.png")
+
+    # Dataset 2 Vanilla
+    solver.stopper = solver.vanillaStop
     data2Stops, data2OptimalStops= solver.getOptimalStopping(getScenario2)
-    print(f"DataSet: {np.argmax(data2OptimalStops) / elements:.2f}")
+    print(f"\tDataSet 2 Vanilla: {np.argmax(data2OptimalStops) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), data2OptimalStops)
-    ax.set_title("Data Set 2")
+    ax.set_title("Data Set 2 Vanilla")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
-    fig.savefig("Figures/DataSet2.png")
+    fig.savefig("Figures/DataSet2Vanilla.png")
     
-     # Dataset 2 Total Stops
+    # Dataset 2 Total Stops
+    solver.stopper = solver.fallThroughStop
+    data2Stops, _ = solver.getOptimalStopping(getScenario2)
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(elements), data2Stops)
-    ax.set_title("Data Set 2 Total Stops")
+    ax.set_title("Data Set 2 Fall Through Total Stops")
     ax.set_xlabel("Stopping number")
     ax.set_ylabel("Optimal solution count")
     fig.savefig("Figures/DataSet2TotalStops.png")
@@ -225,7 +283,7 @@ def problem2():
 
     uniformStops, uniformOptimalStops = solver.getOptimalStopping(solver.getRandomList)
 
-    print(f"Uniform: {(np.argmax(uniformOptimalStops)+1) / elements:.2f}")
+    print(f"\tUniform: {(np.argmax(uniformOptimalStops)+1) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(1,elements+1), uniformOptimalStops)
     ax.set_title("Uniform Distribution")
@@ -235,7 +293,7 @@ def problem2():
 
     normalStops, normalOptimalStops = solver.getOptimalStopping(solver.getNormalList)
 
-    print(f"Normal: {(np.argmax(normalOptimalStops)+1) / elements:.2f}")
+    print(f"\tNormal: {(np.argmax(normalOptimalStops)+1) / elements:.2f}")
     fig, ax = plt.subplots(figsize=(10,7))
     ax.plot(range(1,elements+1), normalOptimalStops)
     ax.set_title("Normal Distribution")
@@ -246,12 +304,10 @@ def problem2():
 
 if __name__ == "__main__":
 
-    # Must comment out fall through condition to get this graph.
-    #controlGraph()
+    controlGraphs()
 
     problem1()
 
-    
     problem2()
     
     plt.show()
