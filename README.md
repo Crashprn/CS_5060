@@ -3,4 +3,5 @@ A repository of homework solutions for my Planning Under Uncertainty class. The 
 tailored toward uncertainty.
 
 1 - Optimal Stopping Algorithms
+
 2 - Explore vs Exploit
