@@ -61,12 +61,10 @@ def problem1():
     T = 1
     S_0 = 100
     pathNum = 5000
-    randoms = lambda : np.random.beta(14,6) - .85
+    randoms = lambda : np.random.beta(14,6) - .7
     
-    brownians = [BrownianSimulation(drift, volatility, S_0, dt, T, randoms) for i in range(pathNum)]
-    with multiprocessing.Pool() as pool:
-        paths = pool.map(callSimulate, brownians)
-    
+    brownians = [BrownianSimulation(drift, volatility, S_0, dt, T, randoms) for i in range(pathNum)] 
+    paths = [b.simulate() for b in brownians]
     plotArrays("Brownian motion", "Brownian", "Stock Price $", range(365), paths, "Days")
     
     riskFree = 1.01
@@ -101,12 +99,13 @@ def problem2():
     
     plotArrays("Brownian motion", "Brownian1", "Stock Price $", range(365), paths1, "Days")
 
+
     price2 = dataset2["Stock Price"].values
     
     f = Fitter(price2, distributions=get_common_distributions())
     f.fit(progress=False)
-    print(f.summary())
     params2 = f.get_best(method = 'sumsquare_error')["chi2"]
+    print(params2)
     random2 = lambda params=params2 : stats.chi2.rvs(df=params["df"]) - 1
 
     volatility = 0.5
