@@ -1,8 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-import math
-import multiprocessing
 import pandas as pd
 import seaborn as sns
 from fitter import Fitter, get_common_distributions
@@ -27,9 +25,6 @@ class BrownianSimulation:
         
         for i in range(int(self.T /self.dt)):
             dW_t =  self.random()
-            
-            #paths.append(self.S_0 * math.exp((self.mu - self.vol**2/2) * (i * self.dt) + self.vol * dW_t))
-            #dW_t = np.random.normal(0, np.sqrt(self.dt))
             dY_t =  self.mu * self.dt + self.vol * dW_t
             self.S_t += dY_t
             paths.append(self.S_t)
@@ -61,7 +56,7 @@ def problem1():
     T = 1
     S_0 = 100
     pathNum = 5000
-    randoms = lambda : np.random.beta(14,6) - .7
+    randoms = lambda : np.random.beta(14,6) - .65
     
     brownians = [BrownianSimulation(drift, volatility, S_0, dt, T, randoms) for i in range(pathNum)] 
     paths = [b.simulate() for b in brownians]
@@ -80,33 +75,15 @@ def problem2():
     dataset2 = pd.read_csv('Data/stock2-1.csv')
 
     price1 = dataset1["Stock Price"].values
-    
-    f = Fitter(price1, distributions=get_common_distributions())
-    f.fit(progress=False)
-    params1 = f.get_best(method = 'sumsquare_error')["lognorm"]
-    random1 = lambda params=params1 : stats.lognorm.rvs(s=params["s"]) - 1
-
-    volatility = 0.5
-    drift = 0.01
-    dt = 1/365
-    T = 1
-    S_0 = 100
-    pathNum = 5000
-    
-    brownians1 = [BrownianSimulation(drift, volatility, S_0, dt, T, random1) for i in range(pathNum)]
-
-    paths1 = [b.simulate() for b in brownians1]
-    
-    plotArrays("Brownian motion", "Brownian1", "Stock Price $", range(365), paths1, "Days")
-
-
     price2 = dataset2["Stock Price"].values
     
-    f = Fitter(price2, distributions=get_common_distributions())
-    f.fit(progress=False)
-    params2 = f.get_best(method = 'sumsquare_error')["chi2"]
-    print(params2)
-    random2 = lambda params=params2 : stats.chi2.rvs(df=params["df"]) - 1
+    sns.displot(data=dataset1, x="Stock Price", kind="hist", bins = 100, aspect = 1.5)
+    sns.displot(data=dataset2, x="Stock Price", kind="hist", bins = 100, aspect = 1.5)    
+    
+    f = Fitter(price1, distributions=get_common_distributions())
+    #f.fit(progress=False)
+    #params1 = f.get_best(method = 'sumsquare_error')["lognorm"]
+    #random1 = lambda params=params1 : stats.lognorm.rvs(s=params["s"]) - 1
 
     volatility = 0.5
     drift = 0.01
@@ -115,11 +92,32 @@ def problem2():
     S_0 = 100
     pathNum = 5000
     
-    brownians2 = [BrownianSimulation(drift, volatility, S_0, dt, T, random2) for i in range(pathNum)]
+    #brownians1 = [BrownianSimulation(drift, volatility, S_0, dt, T, random1) for i in range(pathNum)]
 
-    paths2 = [b.simulate() for b in brownians2]
+    #paths1 = [b.simulate() for b in brownians1]
     
-    plotArrays("Brownian motion", "Brownian2", "Stock Price $", range(365), paths2, "Days")
+    #plotArrays("Brownian motion", "Brownian1", "Stock Price $", range(365), paths1, "Days")
+
+
+
+    
+    f = Fitter(price2, distributions=get_common_distributions())
+    #f.fit(progress=False)
+    #params2 = f.get_best(method = 'sumsquare_error')["chi2"]
+    #random2 = lambda params=params2 : stats.chi2.rvs(df=params["df"]) - 1
+
+    volatility = 0.5
+    drift = 0.01
+    dt = 1/365
+    T = 1
+    S_0 = 100
+    pathNum = 5000
+    
+    #brownians2 = [BrownianSimulation(drift, volatility, S_0, dt, T, random2) for i in range(pathNum)]
+
+    #paths2 = [b.simulate() for b in brownians2]
+    
+    #plotArrays("Brownian motion", "Brownian2", "Stock Price $", range(365), paths2, "Days")
     
 
     
