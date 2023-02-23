@@ -122,12 +122,12 @@ def problem2():
     print(f"Best fit Lognormal with params s: {params1['s']:.4f}, location: {params1['loc']}, scale: {params1['scale']}")
 
     # Plotting distribution with shift line for sanity
-    '''
+    
     fig, ax = plt.subplots(figsize=(10,7))
     r = stats.lognorm.rvs(s=params1["s"], loc=params1['loc'], scale=params1['scale'], size=1000)
     ax.hist(r, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.plot([shift1 for i in range(200)], [.01 * i for i in range(200)])
-    '''
+    
 
 
     # Fitting second price set
@@ -193,8 +193,8 @@ def problem2():
 
 
 def main():
-    problem1()
-    plt.show()
+    #problem1()
+    #plt.show()
     problem2()
     plt.show()
     
