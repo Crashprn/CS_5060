@@ -15,29 +15,26 @@ def getDistributions()-> t.List[float]:
     return distributions
 
 class EpsilonGreedy():
-    def __init__(self, epsilon: float, distibutionGen: t.Callable[[], t.List[float]], baseline: t.Callable[[], float]):
+    def __init__(self, epsilon: float, distibutionGen: t.Callable[[], t.List[float]], baseline: t.Callable[[], float], minSteps: int):
         self.epsilon = epsilon
         self.distributionGen = distibutionGen
         self.probLength = len(self.distributionGen())
         self.baseline = baseline
-        self.q = [np.zeros(5)]
+        self.q = [[0,0,0,0,0]]
         self.qTemporal = np.zeros(5)
         self.n = np.zeros(5)
         self.values = np.zeros(5)
         self.picks = [np.zeros(5)]
         self.stepCount = 0
-    
+        self.numberOfPicks = 0
+        self.minSteps = minSteps
+
     def stepTillConvergence(self):
-        Done = False
-        while not Done:
+        while True:
             self.step()
-            curDone = True
-            for prevQ, currQ in zip(self.q[-2], self.q[-1]):
-                if abs(prevQ - currQ) < 0.001:
-                    curDone = Done and True
-                else:
-                    curDone = False
-            Done = curDone
+            if self.stepCount > self.minSteps and self.picks[-1][np.argmax(self.picks[-1])] > 0.5:
+                break
+
                     
 
     def step(self):
@@ -45,34 +42,46 @@ class EpsilonGreedy():
         if np.random.random() < self.epsilon:
             choice = np.random.randint(0, self.probLength)
         else:
-            choice = np.argmax(self.q)
-        print(choice)
+            choice = np.argmax(self.q[-1])
+
         # Get Outcome from probaility generator
         outcome = self.distributionGen()[choice]
-
+        baseline = self.baseline()
         # Check if outcome is greater than baseline
-        if outcome < self.baseline():
-            return
-        
-        
-        # Add outcome to values and increment n
-        self.values[choice] += outcome
-        self.n[choice] += 1
+        if outcome > baseline:
+            self.numberOfPicks += 1
 
-        # Update q and qTemporal
-        self.qTemporal[choice] += self.divide(outcome - self.qTemporal[choice], self.n[choice])
-        self.q.append(self.qTemporal.copy())
+            # Add outcome to values and increment n
+            self.values[choice] += outcome
+            self.n[choice] += 1
 
-        # Update picks
-        self.picks.append(np.array([n / self.stepCount for n in self.n]))
+            # Update q and qTemporal
+            self.qTemporal[choice] += self.divide(outcome - self.qTemporal[choice], self.n[choice])
+            self.q.append(self.qTemporal.copy())
+
+            # Update picks
+            self.picks.append(np.array([n / self.numberOfPicks for n in self.n]))
+
+        else:
+            self.q.append(self.q[-1])
+            self.picks.append(self.picks[-1])
 
     def getQ(self):
-        x = [i for i in range(self.stepCount)]
-        return x, self.breakIntoSubArrays(self.q, self.probN)
+        x = range(len(self.q))
+        return x, self.breakIntoSubArrays(self.q, self.probLength)
 
     def getPercentPicks(self):
-        x = [i for i in range(self.stepCount)]
-        return x, self.breakIntoSubArrays(self.picks, self.probN)
+        x = range(self.stepCount + 1)
+        return x, self.breakIntoSubArrays(self.picks, self.probLength)
+    
+    @staticmethod
+    def breakIntoSubArrays(arrays, n):
+        valueArrays = np.zeros((n, len(arrays)), dtype='float32')
+        for i in range(len(arrays)):
+            for j in range(n):
+                valueArrays[j][i] = arrays[i][j]
+        
+        return valueArrays
     
     @staticmethod
     def divide(a: float, b: float) -> float:
@@ -88,6 +97,7 @@ def plotArrays(figTitle: str, titles: t.List[str], x: t.List[int], arrays: t.Lis
     ax.set_title(figTitle)
     ax.set_xlabel(xLabel)
     ax.set_ylabel(yLabel)
+
     for i in range(len(arrays)):
         ax.plot(x, arrays[i])
     
@@ -96,19 +106,25 @@ def plotArrays(figTitle: str, titles: t.List[str], x: t.List[int], arrays: t.Lis
 def baseline1():
     return float('-inf')
 
-def problem1():
-    epsilon = 0.1
+def baseline2():
+    return max(np.random.normal(1.5, 3), 0)
+
+def simulate(baseline: t.Callable[[], float], epsilon: float, minSteps: int, figTitle: str):
     distributions = getDistributions
-    baseline = baseline1
-    greedy = EpsilonGreedy(epsilon, distributions, baseline)
+    greedy = EpsilonGreedy(epsilon, distributions, baseline, minSteps)
 
     greedy.stepTillConvergence()
 
     x, q = greedy.getQ()
-    plotArrays("Problem 1", ["Epsilon 0.l"], x, [q], "Q", "Steps")
+    x_1, p_1 = greedy.getPercentPicks()
+
+
+    plotArrays(figTitle, ["beta(7,3) + 2", "uniform(0,4)", "beta(3,7) + 2", "normal(2,1.4)", "normal(1.3, 7)"], x, q, "% Picks", "Steps")
+    plt.show()
 
 
 if __name__ == "__main__":
-    problem1()
+    simulate(baseline1, 0.1, 100, figTitle="Problem 1")
+    simulate(baseline2, 0.2, 1000, figTitle="Problem 2")
 
 
