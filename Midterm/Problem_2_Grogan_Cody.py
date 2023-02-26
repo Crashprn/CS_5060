@@ -15,11 +15,14 @@ def getDistributions()-> t.List[float]:
     return distributions
 
 class EpsilonGreedy():
-    def __init__(self, epsilon: float, distibutionGen: t.Callable[[], t.List[float]], baseline: t.Callable[[], float], minSteps: int):
+    def __init__(self, epsilon: float, distibutionGen: t.Callable[[], t.List[float]], baseline: t.Callable[[], float]):
         self.epsilon = epsilon
         self.distributionGen = distibutionGen
         self.probLength = len(self.distributionGen())
         self.baseline = baseline
+        
+    
+    def stepN(self, steps: int):
         self.q = [[0,0,0,0,0]]
         self.qTemporal = np.zeros(5)
         self.n = np.zeros(5)
@@ -27,15 +30,9 @@ class EpsilonGreedy():
         self.picks = [np.zeros(5)]
         self.stepCount = 0
         self.numberOfPicks = 0
-        self.minSteps = minSteps
-
-    def stepTillConvergence(self):
-        while True:
+        
+        for i in range(steps):
             self.step()
-            if self.stepCount > self.minSteps and self.picks[-1][np.argmax(self.picks[-1])] > 0.5:
-                break
-
-                    
 
     def step(self):
         self.stepCount += 1
@@ -63,8 +60,8 @@ class EpsilonGreedy():
             self.picks.append(np.array([n / self.numberOfPicks for n in self.n]))
 
         else:
-            self.q.append(self.q[-1])
-            self.picks.append(self.picks[-1])
+            self.q.append(self.q[-1].copy())
+            self.picks.append(self.picks[-1].copy())
 
     def getQ(self):
         x = range(len(self.q))
@@ -90,18 +87,25 @@ class EpsilonGreedy():
         return a / b
     
 def plotArrays(figTitle: str, titles: t.List[str], x: t.List[int], arrays: t.List[t.List[float]], yLabel: str = "Y", xLabel: str = "X"):
-    fig, ax = plt.subplots(figsize=(7,7))
-    numberOfLines = len(arrays)
+    fig, ax = plt.subplots(1, 2, figsize=(10, 5))
+    numberOfLines = len(arrays[0])
     colormap = plt.cm.nipy_spectral
-    ax.set_prop_cycle("color", [colormap(i) for i in np.linspace(0, 1, numberOfLines)])
-    ax.set_title(figTitle)
-    ax.set_xlabel(xLabel)
-    ax.set_ylabel(yLabel)
-
-    for i in range(len(arrays)):
-        ax.plot(x, arrays[i])
     
-    ax.legend(titles)
+    for i in range(len(arrays)):
+        ax[i].set_prop_cycle("color", [colormap(i) for i in np.linspace(0, 1, numberOfLines)])
+        ax[i].set_title(figTitle)
+        ax[i].set_xlabel(xLabel)
+        ax[i].set_ylabel(yLabel[i])
+        ax[i].legend(titles)
+        
+    for array in arrays[0]:
+        ax[0].plot(x, array)
+    
+    for array in arrays[1]:
+        ax[1].plot(x, array)
+    
+    
+    fig.savefig(("Figures/Problem_2_" + figTitle + ".png").replace(" ", "_"))
 
 def baseline1():
     return float('-inf')
@@ -109,22 +113,32 @@ def baseline1():
 def baseline2():
     return max(np.random.normal(1.5, 3), 0)
 
-def simulate(baseline: t.Callable[[], float], epsilon: float, minSteps: int, figTitle: str):
+def simulate(baseline: t.Callable[[], float], epsilon: float, figTitle: str):
     distributions = getDistributions
-    greedy = EpsilonGreedy(epsilon, distributions, baseline, minSteps)
+    greedy = EpsilonGreedy(epsilon, distributions, baseline)
+    episodes = 300
+    steps = 500
+        
+    overallQ = np.zeros((5, steps+1))
+    overallP = np.zeros((5, steps+1))
+    for i in range(episodes):
+        greedy.stepN(steps)
+        x, q = greedy.getQ()
+        x_1, p = greedy.getPercentPicks()
+        overallQ += q
+        overallP += p
 
-    greedy.stepTillConvergence()
+    overallQ /= episodes
+    overallP /= episodes
 
-    x, q = greedy.getQ()
-    x_1, p_1 = greedy.getPercentPicks()
-
-
-    plotArrays(figTitle, ["beta(7,3) + 2", "uniform(0,4)", "beta(3,7) + 2", "normal(2,1.4)", "normal(1.3, 7)"], x, q, "% Picks", "Steps")
+    plotArrays(figTitle, ["beta(7,3) + 2", "uniform(0,4)", "beta(3,7) + 2", "normal(2,1.4)", "normal(1.3, 7)"], range(steps+1), [overallQ, overallP], ["Q value", "% picked"], "Steps")
+    print(f"Total days: {greedy.stepCount}, Total skipped days: {greedy.stepCount - greedy.numberOfPicks}")
+    
     plt.show()
 
 
 if __name__ == "__main__":
-    simulate(baseline1, 0.1, 100, figTitle="Problem 1")
-    simulate(baseline2, 0.2, 1000, figTitle="Problem 2")
+    simulate(baseline1, 0.1, figTitle="Part A")
+    simulate(baseline2, 0.1, figTitle="Part B")
 
 

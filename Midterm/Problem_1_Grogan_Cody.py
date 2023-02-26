@@ -122,17 +122,14 @@ def runSim(plotTitle: str, rejectPercent: float, rejectDrift: float):
 
     max = np.argmax([successfulStops1[argMaxIndices[0]], successfulStops2[argMaxIndices[1]], successfulStops3[argMaxIndices[2]], successfulStops4[argMaxIndices[3]], successfulStops5[argMaxIndices[4]]])
 
-    print(f'Best Buffer is {titles[max]} with {successfulStops[max][argMaxIndices[max]]/numTrials:.4f} success rate at {argMaxIndices[max]/numElements * 100:.2f} % of applicants.')
-
-     
-
-    plt.show()
+    print(f'Best Buffer is {titles[max]} with {successfulStops[max][argMaxIndices[max]]/numTrials * 100:.4f} success rate at {argMaxIndices[max]/numElements * 100:.2f} % of applicants.')
 
 
 
 def main():
     runSim("Part A Successful Stops", 0.5, 0.0)
     runSim("Part B Successful Stops", 0.2, .15)
+    plt.show()
     
 
 if __name__ == "__main__":
