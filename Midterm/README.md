@@ -87,7 +87,7 @@ outputted:
 * Q graph w/o baseline
 * Percent picked of each site w/o baseline
 * Total days, Number of days skipped
-
+----
 * Q graph w/ baseline
 * Percent picked of each site w/ baseline
 * Total days, Number of days skipped
@@ -136,5 +136,110 @@ time at 250-300 days.
 
 # Problem 3
 
+For this problem I used the equation for geometric brownian motion to
+simulate the property price over the time period. In addition to the
+problem, I calculated the value in today's dollars using an normal 
+distribution with mean of 4% and std dev of 1%. I also added a
+normal distribution with mean 1000 and std dev of 1000 to represent
+the profit from the store every month. Finally on the american option
+(lease to own) I changed the sell condition to:
 
+* Sell if price + profit is less than starting price
+* Sell if price is greater than 535,000 and if projected derivative from previous 4 points is negative
+
+## Run the Code
+
+The file for this problem has the prefix of Problem_3 and the following
+should be outputted:
+
+* Graph of price paths for American and European w/o volatility change
+* Average profit for American w/o volatility change
+* Average store price American w/o volatility change
+* Average profit for European w/o volatility change
+* Average store price European w/o volatility change
+--------------------
+* Graph of price paths for American and European w/ volatility change
+* Average profit for American w/ volatility change
+* Average store price American w/ volatility change
+* Average profit for Euro w/ volatility change
+* Average store price American w/ volatility change
+
+## Part A
+
+![image](Figures/NoVolInjection.png)
+
+* American:
+    + Profit: $21,273
+    + Store Price: - $7055
+
+* European:
+    + Profit: $72,839
+    + Store Price: - $23,321
+
+### What is the value to us of a American lease-to-own contract?
+
+The lease-to-own or american option provides the smallest store profit and best store
+selling price over 10,000 iterations. The smallest store profit is due to the early selling
+of the stores which causes the stores to lose profit from merchandise. The best store price
+is due to the algorithm being able to sell the store before it becomes too negative.
+
+### How does it compare to the standard lease-to-own?
+
+The standard lease to own greatly out performs profit the American style option because the
+market fairly stable and the profit coming into the store from merchandise largely
+out produces the loss in value of the store. It does not perform as well as the American
+option in store price because the store cannot be sold until the very end of the lease.
+However this nmumber is negligable compared to the profit of merchandise.
+
+
+## Part B
+
+![image](Figures/VolInjection.png)
+
+* American
+    + Profit: $10,627
+    + Store Price: - $7,881
+
+* European
+    + Profit: $56,308
+    + Store Price: - $37,983
+
+### How do American lease-to-own prices change?
+
+The American style lease-to-own generally has the same amount of profitability as the
+the low volatility simulation. This is because the store can be sold at anytime especially
+when the store drops significantly in value. As a result the American style lease-to-own is 
+significantly more stable in highly volatile markets.
+
+### How do European lease-to-own prices change?
+
+The European style lease-to-own performs significantly worse with respect to overall profit
+and store selling price. This shows the instability of the european style because its overall
+profit varies significantly with volatility. In addition, if the profit from the merchandise 
+were to become more volatile the store would likely lose even more value as most of the profitability
+of the store relies on the profit from merchandise.
+
+
+# Problem 4
+
+### What is making sense and what doesn't?
+
+I would say that, in general, I usually go into the homeworks knowing exactly how to do the 
+first problem and needing to ask some questions about the second. However, I think this is the
+intention of the homework problems. Have an easy question to put your feet under you and a harder
+question to test your understanding of the topic. After doing the homeworks, I feel I could implement
+the following algorithms:
+- Optimal Stopping
+- Explore vs Exploit
+- Options pricing/ Monte Carlo Simulation
+- Decent idea on hedging and how to do it
+
+### How can I do this better?
+
+I dont truly know how to do this any better because there is such a large trade-off between
+explaining a method as rigourously as possible and going over a lot of methods at more
+general level. On the rigorous approach, the class is a lot easier but  will feel a lot
+more like brainlessly implementing code with little variation. On the more general approach,
+the class is harder, but the problem solving and learning outside of class will be a lot higher.
+I prefer the general level but I know a lot of people prefer the easiest class possible. 
 
