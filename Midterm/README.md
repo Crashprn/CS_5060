@@ -1,10 +1,10 @@
 # Problem 1
 
-For this problem I used the vanilla stopping rule of forming an expectation from 0 to stop number and then stopping
+For this problem I used the vanilla stopping rule of forming an expectation from 0 to the stop number and then stopping
 the search when the current number exceeded the expectation. The slight twist I added was the addition of what I call
-a 'buffer' which contains 5 candidates. Using this buffer I can control where the candidate that exceeded the expectation
-is. For example, (1, 2, Choice, 4, 5) means that the algorithm looked 2 additional candidates more than the candidate
-that exceeded the expectation.
+a 'buffer' which contains 5 candidates. Using this buffer I can control where the candidate that exceeded the
+expectation is. For example, (1, 2, Choice, 4, 5) means that the algorithm looked 2 additional candidates more
+than the candidate that exceeded the expectation.
 
 ## Run the Code
 
@@ -39,7 +39,7 @@ regardless of position in the buffer.
 
 This result is essentially the same as the simple early stopping problem
 in stopping percentage but not in the success percentage. This is because
-of the possibility of rejection because the value of 50% rejection explains
+of the possibility of rejection value of 50% which explains
 why the success percentage is roughly half of the simple early stopping
 problem.
 
@@ -65,7 +65,7 @@ because the rejection % increases.
 ### How does this compare with simple early stopping problem?
 
 This iteration of the early stopping problem comes even closer to the simple
-early stoppig problem because the base rejection % is much lower than the
+early stoppig problem because the base rejection % is much lower than
 part A. This then proves the conclusion from part A because the success % is
 roughly 20% lower than the simple early stopping success rate. This means 
 that the addition of a buffer does nothing to the optimal stopping policy.
@@ -86,7 +86,6 @@ outputted:
 
 * Q graph w/o baseline
 * Percent picked of each site w/o baseline
-* Total days, Number of days skipped
 ----
 * Q graph w/ baseline
 * Percent picked of each site w/ baseline
@@ -103,7 +102,8 @@ Epsilon: 0.1
 ### How many days will it take for you to make the decision to place the permanent sensor?
 
 The graph above shows the algorithm converges in roughly 50 days rather
-consistently with an epsilon of 0.1. 
+consistently with an epsilon of 0.1. This makes sense because area 1 has 
+the best mean value for all of the sites.
 
 ## Part B
 
@@ -121,10 +121,11 @@ The addition of the baseline significatly changes the permanent sensor site
 because it reduces the values outputted from each distribution. This greatly
 favors the non-terminating distributions such as the normal distribution
 because the highly negative tail values are never recorded thus shifting the
-the q value. This is evident from the number of days skipped because the
-normal distribution had the highest q value but nearly 50% of data points 
+mean value of the distribution. This is evident from the number of days skipped
+because the normal distribution had the highest q value but nearly 50% of data points 
 were thrown out. Meaning the 5th site was below the baseline 50% of the time
-which should have disqualified it from being the optimal area.
+which should have disqualified it from being the optimal area but with the baseline
+it turned out to be the best.
 
 ### How long does it take before you choose to place the sensor?
 
@@ -138,10 +139,10 @@ time at 250-300 days.
 
 For this problem I used the equation for geometric brownian motion to
 simulate the property price over the time period. In addition to the
-problem, I calculated the value in today's dollars using an normal 
-distribution with mean of 4% and std dev of 1%. I also added a
-normal distribution with mean 1000 and std dev of 1000 to represent
-the profit from the store every month. Finally on the american option
+problem, I calculated the value in today's dollars using an inflation
+value generated from a normal distribution with mean of 4% and std dev 
+of 1%. I also added a normal distribution with mean 1000 and std dev of 1000
+to represent the profit from the store every month. Finally on the american option
 (lease to own) I changed the sell condition to:
 
 * Sell if price + profit is less than starting price
@@ -181,15 +182,19 @@ should be outputted:
 The lease-to-own or american option provides the smallest store profit and best store
 selling price over 10,000 iterations. The smallest store profit is due to the early selling
 of the stores which causes the stores to lose profit from merchandise. The best store price
-is due to the algorithm being able to sell the store before it becomes too negative.
+is due to the algorithm being able to sell the store before it becomes too negative. However,
+after running the code multiple times the opposite is true when the inflation doesn't out pace
+the drift. In these cases, the american option tends to make less in both store profit and store
+selling price.
 
 ### How does it compare to the standard lease-to-own?
 
 The standard lease to own greatly out performs profit the American style option because the
-market fairly stable and the profit coming into the store from merchandise largely
+is market fairly stable and the profit coming into the store from merchandise largely
 out produces the loss in value of the store. It does not perform as well as the American
 option in store price because the store cannot be sold until the very end of the lease.
-However this nmumber is negligable compared to the profit of merchandise.
+Thus, if inflation out paces the appreciation of the property the store will always be 
+sold at a loss.
 
 
 ## Part B
@@ -209,15 +214,17 @@ However this nmumber is negligable compared to the profit of merchandise.
 The American style lease-to-own generally has the same amount of profitability as the
 the low volatility simulation. This is because the store can be sold at anytime especially
 when the store drops significantly in value. As a result the American style lease-to-own is 
-significantly more stable in highly volatile markets.
+significantly more stable in highly volatile markets. And has the possibility of being much
+more profitable when the market is more volitile because it can be sold at a volitility peak.
 
 ### How do European lease-to-own prices change?
 
 The European style lease-to-own performs significantly worse with respect to overall profit
-and store selling price. This shows the instability of the european style because its overall
+and store selling price. This shows the susceptibility of the european style because its overall
 profit varies significantly with volatility. In addition, if the profit from the merchandise 
 were to become more volatile the store would likely lose even more value as most of the profitability
-of the store relies on the profit from merchandise.
+of the store relies on the profit from merchandise. This then shows that the american style option
+is a much better option in volatile markets.
 
 
 # Problem 4
