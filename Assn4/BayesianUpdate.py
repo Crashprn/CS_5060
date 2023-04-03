@@ -15,7 +15,7 @@ class BayesianUpdate:
              pi = self.pis[i]
              prior = self.priors[i]
 
-             likelihood = pi**y * (1-pi)**(n-1)
+             likelihood = pi**y * (1-pi)**(n-y)
              likelihood *= math.comb(n,y)
              posterior[i] = prior * likelihood
         
@@ -24,10 +24,15 @@ class BayesianUpdate:
     
 
 def main():
+
     bayes = BayesianUpdate(
         np.array([0.15, 0.25, 0.5, 0.75, 0.85]),
         np.array([0.15, 0.15, 0.4, 0.15, 0.15])
         )
+    # bayes = BayesianUpdate(
+    #     np.array([0.2, 0.5, 0.8]),
+    #     np.array([0.1, 0.25, 0.65])
+    # )
     result = bayes.update(3, 13)
     np.set_printoptions(suppress=True)
     print(f'Posterior: {result}\n Sum Post: {np.sum(result)}')
