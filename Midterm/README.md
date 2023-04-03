@@ -143,10 +143,18 @@ problem, I calculated the value in today's dollars using an inflation
 value generated from a normal distribution with mean of 4% and std dev 
 of 1%. I also added a normal distribution with mean 1000 and std dev of 1000
 to represent the profit from the store every month. Finally on the american option
-(lease to own) I changed the sell condition to:
+(lease to own) I changed some things:
 
 * Sell if price + profit is less than starting price
-* Sell if price is greater than 535,000 and if projected derivative from previous 4 points is negative
+* If the price goes above 535,000, start a running average of the prices until it dips below or hits 10 years.
+Then return the average at the point where it went over the selling price
+
+NOTE: To go into more detail, the seller wants to account for every possibility of the store price.
+Approximating the selling price as the average of all the prices above the sell price accounts for those that
+would sell the property at the very peak of the property price and those that sell at other times
+
+NOTE: Profit when price goes above sell is approximated as half because I assume on average the store will be sold
+half way throught the time it is above the sell price.
 
 ## Run the Code
 
@@ -169,30 +177,30 @@ should be outputted:
 
 ![image](Figures/NoVolInjection.png)
 
-* American:
-    + Profit: $21,273
-    + Store Price: - $7055
+* American
+    + Profit: $36,281
+    + Store Price: $645
 
-* European:
-    + Profit: $72,839
-    + Store Price: - $23,321
+* European
+    + Profit: $101,626
+    + Store Price: $2,375
 
 ### What is the value to us of a American lease-to-own contract?
 
-The lease-to-own or american option provides the smallest store profit and best store
+The lease-to-own or american option provides the smallest store profit and smallest store
 selling price over 10,000 iterations. The smallest store profit is due to the early selling
-of the stores which causes the stores to lose profit from merchandise. The best store price
-is due to the algorithm being able to sell the store before it becomes too negative. However,
-after running the code multiple times the opposite is true when the inflation doesn't out pace
-the drift. In these cases, the american option tends to make less in both store profit and store
-selling price.
+of the stores which causes the stores to lose profit from merchandise. The worst store price
+is due to the seller being able to sell at any point which introduces uncertainty into the price. However,
+after running the code multiple times the opposite is true when the inflation out paces the drift
+of the price. Allowing the American style option to sell the store for less of a loss because
+it can be sold at any time.
 
 ### How does it compare to the standard lease-to-own?
 
 The standard lease to own greatly out performs profit the American style option because the
 is market fairly stable and the profit coming into the store from merchandise largely
-out produces the loss in value of the store. It does not perform as well as the American
-option in store price because the store cannot be sold until the very end of the lease.
+out produces the loss in value of the store. It performs better in the case with inflation less than
+the drift because the average price of the property is always going up and the seller doesn't sell early.
 Thus, if inflation out paces the appreciation of the property the store will always be 
 sold at a loss.
 
@@ -202,29 +210,28 @@ sold at a loss.
 ![image](Figures/VolInjection.png)
 
 * American
-    + Profit: $10,627
-    + Store Price: - $7,881
+    + Profit: $29,443
+    + Store Price: $2,747
 
 * European
-    + Profit: $56,308
-    + Store Price: - $37,983
+    + Profit: $101,603
+    + Store Price: $2,210
 
 ### How do American lease-to-own prices change?
 
 The American style lease-to-own generally has the same amount of profitability as the
 the low volatility simulation. This is because the store can be sold at anytime especially
 when the store drops significantly in value. As a result the American style lease-to-own is 
-significantly more stable in highly volatile markets. And has the possibility of being much
-more profitable when the market is more volitile because it can be sold at a volitility peak.
+significantly more stable in highly volatile markets. This is evident from the American style 
+option beating the European in store sell price.
 
 ### How do European lease-to-own prices change?
 
-The European style lease-to-own performs significantly worse with respect to overall profit
-and store selling price. This shows the susceptibility of the european style because its overall
-profit varies significantly with volatility. In addition, if the profit from the merchandise 
-were to become more volatile the store would likely lose even more value as most of the profitability
-of the store relies on the profit from merchandise. This then shows that the american style option
-is a much better option in volatile markets.
+Compared to the previous, the European style lease-to-own performs about the same because the inflation is likely low.
+However, the store sell profit is less than the American style option because the store cannot be sold at any time. 
+This then shows that the american style option is a offers better store selling prices in volatile markets. In
+addition, if the profit from the merchandise were to become more volatile the store would likely lose even more value
+as most of the profitability of the store relies on the profit from merchandise. 
 
 
 # Problem 4

@@ -140,12 +140,12 @@ def problem2():
     print(f"Best fit Lognormal with params s: {params2['s']:.4f}, location: {params2['loc']}, scale: {params2['scale']}")
 
     # Plotting distribution with shift line for sanity
-    '''
+    
     fig, ax = plt.subplots(figsize=(10,7))
     r = stats.lognorm.rvs(s=params2["s"], loc=params2['loc'], scale=params2['scale'], size=1000)
     ax.hist(r, density=True, bins='auto', histtype='stepfilled', alpha=0.2)
     ax.plot([shift2 for i in range(200)], [.01 * i for i in range(200)])
-    '''
+    plt.show()
 
     # Performing simulation
     volatility = 0.5

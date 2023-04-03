@@ -48,27 +48,42 @@ class BrownianSimulation:
         self.S_t = self.S_0
         vol = self.vol
         mu = self.mu
-        derivative = 0
         profit = 0
+        passedSell = False
+        passedSellProfit = 0
+        stepsPastSell = 0
+        average = 0
+        pastSellIndex = 0
+
         for i in range(1, int(self.T /self.dt)):
             
-            if (path[i - 1] > sellPrice and derivative < 0) or path[i-1] + profit< self.S_0:
-                return (path[0:i], profit)
+            if path[i -1] > sellPrice:
+                average += path[i-1]
+                stepsPastSell += 1
+                passedSell = True
+                pastSellIndex = i -1
+
+            if (passedSell and path[i-1] < sellPrice) or path[i-1] + profit < self.S_0:
+                path[i - stepsPastSell] = average / stepsPastSell if stepsPastSell > 0 else path[i-1]
+                profit = profit - passedSellProfit + passedSellProfit / 2
+                return (path[:i - stepsPastSell + 1], profit)
             
             if i  == self.newParamTime:
                 vol = self.newVol
                 mu = self.newMu
-            if i > 4:
-                var = np.poly1d(np.polyfit(np.arange(0, 4), path[i-4:i].copy(), 3))
-                derivative = var.deriv()(4)
 
-            profit += self.monthlyProfit()/ (1 + self.inflation)**(i)
-
+            prof = self.monthlyProfit() / (1 + self.inflation)**(i)
+            profit += prof
+            passedSellProfit += prof if passedSell else 0
             dW_t =  np.random.normal(0, np.sqrt(self.dt))
             dY_t =  self.S_t * (mu * self.dt + vol * dW_t)
             self.S_t += dY_t
             path[i] = self.S_t / (1 + self.inflation)**(i)
         
+        if passedSell:
+            path[pastSellIndex - stepsPastSell] = average / stepsPastSell
+            profit = profit - passedSellProfit + passedSellProfit / 2
+            return (path[:pastSellIndex - stepsPastSell + 1], profit)
         return (path, profit)
         
 
@@ -95,18 +110,18 @@ def plotArrays(figTitle, saveFile, arrays: list[list[np.ndarray]],y_title= "Toda
     fig.savefig(os.path.join("Figures", saveFile))
 
     
-def simulate(savePrefix: str, newVol: float, newDrift, newVolTime: float):
+def simulate(savePrefix: str, inflation: float, newVol: float, newDrift, newVolTime: float):
     startPrice = 385_000
     T = 10
     dt = 1/12
     sellPrice = 535_000
     drift = 0.04
     vol = 0.03
-    inflation = np.random.normal(0.04, 0.01) * dt
+
     monthlyProfit = lambda : np.random.normal(1000, 1000)
     numPaths = 10000
 
-    sim = BrownianSimulation(drift, vol, startPrice, dt, T, newVol, newDrift, int(newVolTime / dt), inflation, monthlyProfit)
+    sim = BrownianSimulation(drift, vol, startPrice, dt, T, newVol, newDrift, int(newVolTime / dt), inflation * dt, monthlyProfit)
     
     # American style
     amerPaths = [sim.simulateAmer(sellPrice) for i in range(numPaths)]
@@ -131,7 +146,8 @@ def simulate(savePrefix: str, newVol: float, newDrift, newVolTime: float):
 
 
 if __name__ == "__main__":
-    simulate("No", 0.03, 0.04, 5)
+    inflation = np.random.normal(0.04, 0.01)
+    simulate("No", inflation, 0.03, 0.04, 5)
     print("--------------------------------------------------")
-    simulate("", 0.19, 0.04, 5)
+    simulate("", inflation, 0.19, 0.04, 5)
 
